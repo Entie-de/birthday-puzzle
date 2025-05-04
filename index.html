@@ -1,0 +1,224 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Birthday Puzzle</title>
+  <style>
+    body {
+      background-color: #fff176;
+      font-family: Arial, sans-serif;
+      text-align: center;
+      padding-top: 100px;
+      overflow: hidden;
+    }
+    .puzzle { font-size: 24px; margin-bottom: 20px; }
+    .error-box, .gift-section { display: none; position: relative; }
+    .fake-error {
+      background-color: red;
+      color: white;
+      padding: 15px;
+      font-weight: bold;
+      border: 2px solid black;
+      width: 220px;
+      z-index: 9999; 
+      border-radius: 10px;
+      position: absolute;
+      animation: shake 0.3s infinite alternate;
+    }
+    .fake-error button {
+      margin-top: 10px;
+      padding: 5px 10px;
+      border: none;
+      background-color: black;
+      color: white;
+      cursor: pointer;
+      border-radius: 5px;
+    }
+    @keyframes shake {
+      0% { transform: rotate(-1.5deg); }
+      100% { transform: rotate(1.5deg); }
+    }
+    .gift-box {
+      margin-top: 20px;
+      width: 150px;
+      background-color: pink;
+      color: white;
+      font-size: 18px;
+      line-height: 150px;
+      cursor: pointer;
+      margin: 30px auto;
+      border-radius: 20px;
+      display: none;
+      font-weight: bold;
+    }
+    .message {
+      font-size: 20px;
+      background: #ffc0cb;
+      padding: 20px;
+      margin: 20px auto;
+      border: 2px dashed red;
+      max-width: 500px;
+      border-radius: 15px;
+      position: relative;
+      z-index: 1;
+    }
+    .balloon, .heart {
+      position: absolute;
+      z-index: 0;
+      opacity: 0.85;
+    }
+    .balloon {
+      width: 40px;
+      height: 60px;
+      border-radius: 50%;
+      animation: fly 8s linear infinite;
+    }
+    .heart {
+      width: 20px;
+      height: 18px;
+      background-color: pink;
+      transform: rotate(-45deg);
+      animation: flyHeart 8s linear infinite;
+    }
+    .heart::before,
+    .heart::after {
+      content: "";
+      position: absolute;
+      width: 20px;
+      height: 18px;
+      background-color: inherit;
+      border-radius: 50%;
+    }
+    .heart::before {
+      top: -10px;
+      left: 0;
+    }
+    .heart::after {
+      left: 10px;
+      top: 0;
+    }
+    @keyframes fly {
+      0% { bottom: -100px; opacity: 0; transform: translateX(0); }
+      10% { opacity: 1; }
+      100% { bottom: 110%; transform: translateX(-50px); opacity: 0; }
+    }
+    @keyframes flyHeart {
+      0% { bottom: -50px; opacity: 0; transform: translateX(0) scale(1); }
+      10% { opacity: 1; }
+      100% { bottom: 110%; transform: translateX(-30px) scale(1.5); opacity: 0; }
+    }
+  </style>
+</head>
+<body>
+
+  <audio id="bday-audio" src="audio/happy-birthday.mp3" preload="auto"></audio>
+
+  <div class="puzzle">
+    <label>What is 2 + 2?</label><br><br>
+    <input type="text" id="answer" placeholder="Type here" />
+  </div>
+
+  <div class="error-box" id="errorBox"></div>
+
+  <div class="gift-box" id="giftBox" onclick="showMessage()">
+    🎁 Click Me!
+  </div>
+
+  <div class="gift-section" id="giftSection">
+    <div class="message">
+      🎉 <strong>HAPPY BIRTHDAY TO YOU TEACHER !</strong> 🎉<br><br>
+      Lots of love and prayers for your life ahead. I am really grateful for this day — OMG, can't even imagine what my life would be like if 4 May didn't happen! 💗🎈
+    </div>
+  </div>
+
+  <script>
+    const input = document.getElementById("answer");
+    const errorBox = document.getElementById("errorBox");
+    const giftBox = document.getElementById("giftBox");
+    const giftSection = document.getElementById("giftSection");
+    const audio = document.getElementById("bday-audio");
+    let cancelCount = 0;
+
+    input.addEventListener("input", () => {
+      if (input.value === "4") {
+        showInitialError();
+      }
+    });
+
+    function showInitialError() {
+      input.disabled = true;
+      errorBox.style.display = "block";
+      const error = document.createElement("div");
+      error.className = "fake-error";
+      error.innerHTML = `🚨 OH NO! YOUR PHONE IS HACKED! 🚨`;
+      error.style.top = "30%";
+      error.style.left = "30%";
+      errorBox.appendChild(error);
+      
+      setTimeout(() => {
+        error.remove();
+        spawnRandomError();
+      }, 5000);
+    }
+
+    function spawnRandomError() {
+      if (cancelCount >= 10) return;
+      const err = document.createElement("div");
+      err.className = "fake-error";
+      err.style.top = Math.random() * 80 + "%";
+      err.style.left = Math.random() * 80 + "%";
+      err.innerHTML = `💣 ERROR 404 - SYSTEM FAIL<br><button onclick="handleCancel(this)">Cancel</button>`;
+      errorBox.appendChild(err);
+    }
+
+    function handleCancel(button) {
+      cancelCount++;
+      const parent = button.parentElement;
+      parent.remove();
+      if (cancelCount < 10) {
+        spawnRandomError();
+      } else {
+        giftBox.style.display = "block";
+      }
+    }
+
+    function showMessage() {
+      errorBox.style.display = "none";
+      giftBox.style.display = "none";
+      giftSection.style.display = "block";
+      releaseBalloons();
+      releaseHearts();
+      audio.play().catch((err) => {
+        alert("Audio failed to play: " + err);
+      });
+    }
+
+    function releaseBalloons() {
+      const colors = ["#ff0000", "#ff8c00", "#ffff00", "#008000", "#00ced1", "#1e90ff", "#ff69b4"];
+      setInterval(() => {
+        const balloon = document.createElement("div");
+        balloon.classList.add("balloon");
+        balloon.style.left = Math.random() * 100 + "vw";
+        balloon.style.backgroundColor = colors[Math.floor(Math.random() * colors.length)];
+        balloon.style.animationDuration = 4 + Math.random() * 3 + "s";
+        document.body.appendChild(balloon);
+        setTimeout(() => balloon.remove(), 8000);
+      }, 300);
+    }
+
+    function releaseHearts() {
+      const heartColors = ["pink", "red", "purple"];
+      setInterval(() => {
+        const heart = document.createElement("div");
+        heart.classList.add("heart");
+        heart.style.left = Math.random() * 100 + "vw";
+        heart.style.backgroundColor = heartColors[Math.floor(Math.random() * heartColors.length)];
+        document.body.appendChild(heart);
+        setTimeout(() => heart.remove(), 10000);
+      }, 400);
+    }
+  </script>
+</body>
+</html>
